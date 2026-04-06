@@ -15,25 +15,26 @@ Batch processing pipeline for fraud detection over 284,807 real credit card tran
 
 1. Reads raw CSV data into a Spark DataFrame
 2. Separates fraudulent from legitimate transactions
-3. Computes descriptive statistics on fraud amounts
-4. Classifies fraud by amount range (low / medium / high)
+3. Classifies fraud by amount range (low / medium / high) using DataFrame API
+4. Runs equivalent queries using Spark SQL
 5. Writes results to Parquet format
 
 ## Results
 
-| Range       | Cases | Avg Amount |
-|-------------|-------|------------|
-| low (<100)  | 362   | 19.39      |
-| medium      | 121   | 329.52     |
-| high (>1000)| 9     | 1470.81    |
+| Range        | Cases | Avg Amount |
+|--------------|-------|------------|
+| low (<100)   | 362   | 19.39      |
+| medium       | 121   | 329.52     |
+| high (>1000) | 9     | 1470.81    |
 
-Most fraud occurs at low amounts — consistent with card-testing behavior.
+Fraud transactions show a higher average amount (122€) than legitimate ones (88€).
 
 ## Stack
 
 - Apache Spark 3.5.1
 - Scala 2.12.18
 - Java 17
+- Spark SQL
 - Output: Parquet
 
 ## Run
