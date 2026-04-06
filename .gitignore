@@ -1,0 +1,6 @@
+output/
+target/
+.bsp/
+*.class
+.idea/
+*.iml
