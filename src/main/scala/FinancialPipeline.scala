@@ -25,18 +25,39 @@ object FinancialPipeline {
     println(s"Normales:     ${normales.count()}")
     println(s"Fraudulentas: ${fraudes.count()}")
 
-    println("\nEstadisticas de importe en fraudes:")
-    fraudes.select("Amount").describe().show()
-
-    println("Fraudes por rango de importe:")
-    fraudes.withColumn("rango",
+    println("\n-- DataFrame API --")
+    fraudes.withColumn("riesgo",
       when(col("Amount") > 1000, "alto")
       .when(col("Amount") > 100, "medio")
       .otherwise("bajo")
-    ).groupBy("rango")
+    ).groupBy("riesgo")
       .agg(count("*").alias("num"), round(avg("Amount"), 2).alias("importe_medio"))
       .orderBy(desc("num"))
       .show()
+
+    println("\n-- Spark SQL --")
+    df.createOrReplaceTempView("transacciones")
+
+    spark.sql("""
+      SELECT
+        CASE
+          WHEN Amount > 1000 THEN 'alto'
+          WHEN Amount > 100  THEN 'medio'
+          ELSE 'bajo'
+        END AS riesgo,
+        COUNT(*)              AS num,
+        ROUND(AVG(Amount), 2) AS importe_medio
+      FROM transacciones
+      WHERE Class = 1
+      GROUP BY 1
+      ORDER BY 2 DESC
+    """).show()
+
+    spark.sql("""
+      SELECT Class, COUNT(*) AS total, ROUND(AVG(Amount), 2) AS avg_amount
+      FROM transacciones
+      GROUP BY Class
+    """).show()
 
     fraudes.write.mode("overwrite").parquet("output/fraudes")
     println("Guardado en output/fraudes")
